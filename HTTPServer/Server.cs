@@ -89,46 +89,100 @@ namespace HTTPServer
             // TODO: close client socket
             clientSock.Close();
         }
-
+        StatusCode code;
         Response HandleRequest(Request request)
-        {
-            throw new NotImplementedException();
-            string content;
+        { 
+            bool ValidRequest;
+            Response response;
+            string responsecontent ; 
+            string PhysicalPath , RedirectionPage = string.Empty;
             try
             {
                 //TODO: check for bad request 
-
+                ///
+                ValidRequest = request.ParseRequest();
+                if (!ValidRequest) {
+                    code = StatusCode.BadRequest;
+                    StreamReader sr = new StreamReader(Configuration.BadRequestDefaultPageName);
+                    responsecontent = sr.ReadToEnd();
+                    response = new Response(code, "text/html", responsecontent,RedirectionPage);
+                    return response;
+                }
+                //////////////////////
                 //TODO: map the relativeURI in request to get the physical path of the resource.
-
+                PhysicalPath = request.relativeURI;
                 //TODO: check for redirect
-
-                //TODO: check file exists
-
+                if (Configuration.RedirectionRules.ContainsKey(PhysicalPath))
+                {
+                   RedirectionPage= GetRedirectionPagePathIFExist(PhysicalPath);
+                   code = StatusCode.Redirect;
+                   StreamReader sr = new StreamReader(Configuration.RedirectionDefaultPageName);
+                   responsecontent = sr.ReadToEnd();
+                   response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                   return response;
+                }
+                //TODO: check file exist
                 //TODO: read the physical file
-
                 // Create OK response
+                responsecontent = LoadDefaultPage(PhysicalPath);              
+                if(string.IsNullOrEmpty(responsecontent))
+                {
+                    StreamReader sr = new StreamReader(Configuration.NotFoundDefaultPageName);
+                    responsecontent = sr.ReadToEnd();
+                    code = StatusCode.NotFound;
+                    response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                    return response;
+                }
+                else
+                {
+                    code = StatusCode.OK;
+                    response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                    return response;
+                }
+                
             }
             catch (Exception ex)
             {
                 // TODO: log exception using Logger class
                 // TODO: in case of exception, return Internal Server Error. 
+                code = StatusCode.InternalServerError;
+                Exception e2 = (Exception)Activator.CreateInstance(ex.GetType(), "Internal Server Error", ex);
+                Logger.LogException(e2);
+                StreamReader sr = new StreamReader(Configuration.InternalErrorDefaultPageName);
+                responsecontent = sr.ReadToEnd();
+                response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                return response;
             }
         }
 
         private string GetRedirectionPagePathIFExist(string relativePath)
         {
             // using Configuration.RedirectionRules return the redirected page path if exists else returns empty
-
-            return string.Empty;
+            string RedirectionPage;
+            RedirectionPage = Configuration.RedirectionRules[relativePath];
+            return RedirectionPage;
         }
 
         private string LoadDefaultPage(string defaultPageName)
         {
             string filePath = Path.Combine(Configuration.RootPath, defaultPageName);
             // TODO: check if filepath not exist log exception using Logger class and return empty string
-
+            try
+            {
+                StreamReader sr = new StreamReader(filePath);
+                string content = sr.ReadToEnd();               
+                return content;
+            }
+            catch (Exception ex)
+            {
+                
+                Exception e2 = (Exception)Activator.CreateInstance(ex.GetType(), "page not found", ex);          
+                Logger.LogException(e2);
+               
+                return string.Empty;
+            }
+          
             // else read file and return its content
-            return string.Empty;
         }
 
         private void LoadRedirectionRules(string filePath)
@@ -151,6 +205,8 @@ namespace HTTPServer
             catch (Exception ex)
             {
                 // TODO: log exception using Logger class
+                Exception e2 = (Exception)Activator.CreateInstance(ex.GetType(), "redicriction file is not exist", ex);
+                Logger.LogException(e2);
                 Environment.Exit(1);
             }
         }
