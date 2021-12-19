@@ -39,7 +39,6 @@ namespace HTTPServer
                 //Start the thread
                 newthread.Start(clientSocket);
 
-
             }
         }
 
@@ -138,6 +137,16 @@ namespace HTTPServer
             {
                 // TODO: using the filepath paramter read the redirection rules from file 
                 // then fill Configuration.RedirectionRules dictionary 
+                StreamReader sr = new StreamReader(filePath);
+                string line;
+                string[] rules;
+                Configuration.RedirectionRules = new Dictionary<string, string>();
+                while ((line = sr.ReadLine()) != null)
+                {
+                    rules = line.Split(',');
+                    Configuration.RedirectionRules.Add(rules[0], rules[1]);
+                }
+                sr.Close();
             }
             catch (Exception ex)
             {
