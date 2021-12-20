@@ -31,7 +31,7 @@ namespace HTTPServer
             get { return headerLines; }
         }
 
-        HTTPVersion httpVersion;
+        public HTTPVersion httpVersion;
         string requestString;
         string[] contentLines;
 
@@ -45,7 +45,7 @@ namespace HTTPServer
         /// <returns>True if parsing succeeds, false otherwise.</returns>
         public bool ParseRequest()
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
 
             //TODO: parse the receivedRequest using the \r\n delimeter
             string[] stringSeparators = new string[] { "\r\n" };

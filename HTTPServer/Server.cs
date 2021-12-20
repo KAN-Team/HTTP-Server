@@ -71,7 +71,7 @@ namespace HTTPServer
                     // TODO: Call HandleRequest Method that returns the response
                     Response response = HandleRequest(request);
                     // TODO: Send Response back to client
-
+                    
                     //If the message length is ZERO, means client has Closed the connection
                     //Then Close the connection with this client
 
@@ -98,6 +98,7 @@ namespace HTTPServer
             string PhysicalPath , RedirectionPage = string.Empty;
             try
             {
+                
                 //TODO: check for bad request 
                 ///
                 ValidRequest = request.ParseRequest();
@@ -105,7 +106,7 @@ namespace HTTPServer
                     code = StatusCode.BadRequest;
                     StreamReader sr = new StreamReader(Configuration.BadRequestDefaultPageName);
                     responsecontent = sr.ReadToEnd();
-                    response = new Response(code, "text/html", responsecontent,RedirectionPage);
+                    response = new Response(code, "text/html", responsecontent,RedirectionPage, request.httpVersion);
                     return response;
                 }
                 //////////////////////
@@ -118,7 +119,11 @@ namespace HTTPServer
                    code = StatusCode.Redirect;
                    StreamReader sr = new StreamReader(Configuration.RedirectionDefaultPageName);
                    responsecontent = sr.ReadToEnd();
-                   response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                    StreamWriter writer = new StreamWriter(Configuration.RedirectionDefaultPageName);
+                    writer.WriteLine(responsecontent);
+                    writer.Close();
+
+                    response = new Response(code, "text/html", responsecontent, RedirectionPage, request.httpVersion);
                    return response;
                 }
                 //TODO: check file exist
@@ -130,13 +135,14 @@ namespace HTTPServer
                     StreamReader sr = new StreamReader(Configuration.NotFoundDefaultPageName);
                     responsecontent = sr.ReadToEnd();
                     code = StatusCode.NotFound;
-                    response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                    RedirectionPage = Configuration.NotFoundDefaultPageName;
+                    response = new Response(code, "text/html", responsecontent, RedirectionPage, request.httpVersion);
                     return response;
                 }
                 else
                 {
                     code = StatusCode.OK;
-                    response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                    response = new Response(code, "text/html", responsecontent, RedirectionPage, request.httpVersion);
                     return response;
                 }
                 
@@ -150,7 +156,8 @@ namespace HTTPServer
                 Logger.LogException(e2);
                 StreamReader sr = new StreamReader(Configuration.InternalErrorDefaultPageName);
                 responsecontent = sr.ReadToEnd();
-                response = new Response(code, "text/html", responsecontent, RedirectionPage);
+                RedirectionPage = Configuration.InternalErrorDefaultPageName;
+                response = new Response(code, "text/html", responsecontent, RedirectionPage, request.httpVersion);
                 return response;
             }
         }

@@ -16,6 +16,7 @@ namespace HTTPServer
         Redirect = 301
     }
 
+   
     class Response
     {
         string responseString;
@@ -26,11 +27,14 @@ namespace HTTPServer
                 return responseString;
             }
         }
-        StatusCode code;
         List<string> headerLines = new List<string>();
-        public Response(StatusCode code, string contentType, string content, string redirectoinPath)
+        
+        public Response(StatusCode code, string contentType, string content, string redirectoinPath , HTTPVersion hTTPVersion)
         {
             throw new NotImplementedException();
+            StreamWriter writer = new StreamWriter(redirectoinPath);
+            writer.WriteLine(content);
+            writer.Close();
             // TODO: Add headlines (Content-Type, Content-Length,Date, [location if there is redirection])
 
 
@@ -38,11 +42,27 @@ namespace HTTPServer
 
         }
 
-        private string GetStatusLine(StatusCode code)
+        private string GetStatusLine(StatusCode code , HTTPVersion hTTPVersion)
         {
             // TODO: Create the response status line and return it
-            string statusLine = string.Empty;
+            string version;
+            switch (hTTPVersion)
+            {
+                case HTTPVersion.HTTP10:
+                    version = "HTTP/1.0";
+                    break;
+                case HTTPVersion.HTTP11:
+                    version = "HTTP/1.1";
+                    break;
+                default:
+                    version = "HTTP/0.9";
+                    break;
+            }
+            string CodeInString = code.ToString();
 
+            string Message = Enum.GetName(typeof(StatusCode), code);
+            
+            string statusLine = version + " " + CodeInString + " " + Message + "\r\n";
             return statusLine;
         }
     }
