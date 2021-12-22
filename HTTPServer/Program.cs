@@ -18,7 +18,9 @@ namespace HTTPServer
             // 1) Make server object on port 1000
             Server server = new Server(1000, path);
             // 2) Start Server
+            Console.WriteLine("Server is active now  ^_^ ");
             server.StartServer();
+            
         }
 
         static void CreateRedirectionRulesFile()

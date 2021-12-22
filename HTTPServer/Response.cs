@@ -31,15 +31,23 @@ namespace HTTPServer
         
         public Response(StatusCode code, string contentType, string content, string redirectoinPath , HTTPVersion hTTPVersion)
         {
-            throw new NotImplementedException();
             StreamWriter writer = new StreamWriter(redirectoinPath);
             writer.WriteLine(content);
             writer.Close();
+
+            // create status line
+            string statusLine = GetStatusLine(code , hTTPVersion);
             // TODO: Add headlines (Content-Type, Content-Length,Date, [location if there is redirection])
-
-
+            DateTime dateTime =  DateTime.Now;
+            headerLines.Add(contentType);
+            headerLines.Add(content.Length.ToString());
+            headerLines.Add(dateTime.ToString());
+            if(!string.IsNullOrEmpty(redirectoinPath)) headerLines.Add(dateTime.ToString());
             // TODO: Create the request string
+            string Headers= GetHeadersLines();
+            string BlankLine = "\r\n";
 
+            responseString = statusLine + "\n" + Headers + "\n" + BlankLine + content;
         }
 
         private string GetStatusLine(StatusCode code , HTTPVersion hTTPVersion)
@@ -62,8 +70,17 @@ namespace HTTPServer
 
             string Message = Enum.GetName(typeof(StatusCode), code);
             
-            string statusLine = version + " " + CodeInString + " " + Message + "\r\n";
+            string statusLine = version + " " + CodeInString + " " + Message ;
             return statusLine;
         }
-    }
+        private string GetHeadersLines()
+        {
+            string headers = "";
+            foreach (string line in headerLines)
+            {
+                headers = headers + line + "\n";
+            }
+            return headers;
+        }
+        }
 }

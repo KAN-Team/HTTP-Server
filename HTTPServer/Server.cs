@@ -71,17 +71,25 @@ namespace HTTPServer
                     // TODO: Call HandleRequest Method that returns the response
                     Response response = HandleRequest(request);
                     // TODO: Send Response back to client
-                    
+                    data = Encoding.ASCII.GetBytes(response.ResponseString);
+                    clientSock.Send(data);
                     //If the message length is ZERO, means client has Closed the connection
                     //Then Close the connection with this client
-
+                    if (receivedLength == 0)
+                    {
+                        Console.WriteLine("Client: {0} ended the connection", clientSock.RemoteEndPoint);
+                        clientSock.Close();
+                    }
                     //Else, display the message on the console window
+
+
                 }
 
 
 
                 catch (Exception ex)
                 {
+                    Logger.LogException(ex);
                     // TODO: log exception using Logger class
                 }
             }

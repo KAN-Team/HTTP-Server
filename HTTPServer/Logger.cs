@@ -11,7 +11,7 @@ namespace HTTPServer
         static StreamWriter sr = new StreamWriter("log.txt");
         public static void LogException(Exception ex)
         {
-            DateTime dateTime = new DateTime();
+            DateTime dateTime =  DateTime.Now;
             sr.WriteLine("Datetime: " + dateTime );
             sr.WriteLine("message: " + ex.Message);
             // TODO: Create log file named log.txt to log exception details in it
