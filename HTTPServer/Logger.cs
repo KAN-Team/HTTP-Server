@@ -9,11 +9,16 @@ namespace HTTPServer
     class Logger
     {
         static StreamWriter sr = new StreamWriter("log.txt");
+        static readonly object _object = new object();
         public static void LogException(Exception ex)
         {
-            DateTime dateTime =  DateTime.Now;
-            sr.WriteLine("Datetime: " + dateTime );
-            sr.WriteLine("message: " + ex.Message);
+            lock (_object)
+            {
+                DateTime dateTime = DateTime.Now;
+                sr.WriteLine("Datetime: " + dateTime.ToString());
+                sr.WriteLine("message: " + ex.Message);
+            }
+            
             // TODO: Create log file named log.txt to log exception details in it
             //Datetime:
             //message:

@@ -51,8 +51,7 @@ namespace HTTPServer
             string[] stringSeparators = new string[] { "\r\n" };
             requestLines = requestString.Split(stringSeparators, StringSplitOptions.None);
             // check that there is atleast 3 lines: Request line, Host Header, Blank line (usually 4 lines with the last empty line for empty content)
-            
-            if (requestLines.Length != 4) return false;
+            if (requestLines.Length < 3) return false;
             // Parse Request line
             // Validate blank line exists
             // Load header lines into HeaderLines dictionary
@@ -67,7 +66,7 @@ namespace HTTPServer
             bool MethodValid = true;
             switch (ReqLineDetails[0])
             {
-                case "Get":
+                case "GET":
                     method = RequestMethod.GET;
                     break;
                 case "POST":
@@ -80,7 +79,10 @@ namespace HTTPServer
                     MethodValid = false;
                     break;
             }
+            
             bool uri = ValidateIsURI(ReqLineDetails[1]);
+            relativeURI = ReqLineDetails[1];
+
             switch (ReqLineDetails[2]) {
                 case "HTTP/1.0":
                     httpVersion = HTTPVersion.HTTP10;
@@ -103,12 +105,13 @@ namespace HTTPServer
 
         private bool LoadHeaderLines()
         {
-            //throw new NotImplementedException();
+            headerLines = new Dictionary<string, string>();
             string[] stringSeparators = new string[] { "\r\n" };
             string [] headers = requestLines[1].Split(stringSeparators, StringSplitOptions.None);
             foreach(string line in headers )
             {
-                string[] Head = line.Split(':');
+                 stringSeparators = new string[] { ": " };
+                string[] Head = line.Split(stringSeparators, StringSplitOptions.None);
                 headerLines.Add(Head[0],Head[1]);
             }
             if (HeaderLines.Count != headers.Length) return false;
@@ -120,7 +123,7 @@ namespace HTTPServer
 
         private bool ValidateBlankLine()
         {
-           return (string.IsNullOrEmpty(requestLines[3]));
+            return string.IsNullOrEmpty(requestLines[requestLines.Length-1]);
         }
 
     }

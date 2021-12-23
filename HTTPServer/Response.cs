@@ -31,10 +31,6 @@ namespace HTTPServer
         
         public Response(StatusCode code, string contentType, string content, string redirectoinPath , HTTPVersion hTTPVersion)
         {
-            StreamWriter writer = new StreamWriter(redirectoinPath);
-            writer.WriteLine(content);
-            writer.Close();
-
             // create status line
             string statusLine = GetStatusLine(code , hTTPVersion);
             // TODO: Add headlines (Content-Type, Content-Length,Date, [location if there is redirection])
@@ -42,12 +38,21 @@ namespace HTTPServer
             headerLines.Add(contentType);
             headerLines.Add(content.Length.ToString());
             headerLines.Add(dateTime.ToString());
-            if(!string.IsNullOrEmpty(redirectoinPath)) headerLines.Add(dateTime.ToString());
+            string Headers = "";
+            Headers = "Content-Type: " + headerLines[0] + "\r\n"
+                + "Content-Length: " + headerLines[1] + "\r\n"
+                + "Date: " + headerLines[2];
+
+            if (!string.IsNullOrEmpty(redirectoinPath))
+            {
+                headerLines.Add(redirectoinPath);
+                Headers = Headers +"\r\n"+ "location: " + headerLines[3];
+
+            }
             // TODO: Create the request string
-            string Headers= GetHeadersLines();
             string BlankLine = "\r\n";
 
-            responseString = statusLine + "\n" + Headers + "\n" + BlankLine + content;
+            responseString = statusLine + "\r\n" + Headers + "\r\n" + BlankLine + content;     
         }
 
         private string GetStatusLine(StatusCode code , HTTPVersion hTTPVersion)
@@ -66,21 +71,13 @@ namespace HTTPServer
                     version = "HTTP/0.9";
                     break;
             }
-            string CodeInString = code.ToString();
+            string CodeInString = code.GetHashCode().ToString();
 
             string Message = Enum.GetName(typeof(StatusCode), code);
             
             string statusLine = version + " " + CodeInString + " " + Message ;
             return statusLine;
         }
-        private string GetHeadersLines()
-        {
-            string headers = "";
-            foreach (string line in headerLines)
-            {
-                headers = headers + line + "\n";
-            }
-            return headers;
-        }
+       
         }
 }

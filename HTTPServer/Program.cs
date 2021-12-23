@@ -8,7 +8,7 @@ namespace HTTPServer
 {
     class Program
     {
-        static string path = @"C:\Users\LENOVO\OneDrive\Documents\githup\Network_project\HTTPServer\bin\Debug\Redirection.txt";
+        static string path = @"Redirection.txt";
 
         static void Main(string[] args)
         {
@@ -26,10 +26,10 @@ namespace HTTPServer
         static void CreateRedirectionRulesFile()
         {
             // TODO: Create file named redirectionRules.txt
-            Stream stream = new FileStream(path,FileMode.Create);
-            TextWriter tw = new StreamWriter(stream , Encoding.UTF8);
-            tw.WriteLine("aboutus.html,aboutus2.html");
-            tw.Close();
+            StreamWriter writer = new StreamWriter(path);
+            writer.WriteLine("aboutus.html,aboutus2.html");
+            writer.Close();
+
             // each line in the file specify a redirection rule
             // example: "aboutus.html,aboutus2.html"
             // means that when making request to aboustus.html,, it redirects me to aboutus2
