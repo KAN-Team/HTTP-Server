@@ -44,9 +44,7 @@ namespace HTTPServer
         /// </summary>
         /// <returns>True if parsing succeeds, false otherwise.</returns>
         public bool ParseRequest()
-        {
-           // throw new NotImplementedException();
-
+        { 
             //TODO: parse the receivedRequest using the \r\n delimeter
             string[] stringSeparators = new string[] { "\r\n" };
             requestLines = requestString.Split(stringSeparators, StringSplitOptions.None);
@@ -71,6 +69,7 @@ namespace HTTPServer
                     break;
                 case "POST":
                     method = RequestMethod.POST;
+
                     break;
                 case "HEAD":
                     method = RequestMethod.HEAD;

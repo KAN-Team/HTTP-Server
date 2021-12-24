@@ -47,7 +47,6 @@ namespace HTTPServer
             {
                 headerLines.Add(redirectoinPath);
                 Headers = Headers +"\r\n"+ "location: " + headerLines[3];
-
             }
             // TODO: Create the request string
             string BlankLine = "\r\n";

@@ -6,11 +6,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace HTTPServer
 {
     class Server
     {
+        string redirectionPath = string.Empty;
         Socket serverSocket;
 
         public Server(int portNumber, string redirectionMatrixPath)
@@ -34,6 +36,7 @@ namespace HTTPServer
             {
                 //TODO: accept connections and start thread for each accepted connection.
                 Socket clientSocket = this.serverSocket.Accept();
+                Console.WriteLine("---------------------------------------");
                 Console.WriteLine("New client accepted: {0}", clientSocket.RemoteEndPoint);
                 Thread newthread = new Thread(new ParameterizedThreadStart(HandleConnection));
                 //Start the thread
@@ -70,19 +73,36 @@ namespace HTTPServer
                     }
                     // TODO: Create a Request object using received request string
                     string RequestString = Encoding.ASCII.GetString(data , 0 ,receivedLength);
+                    Console.WriteLine("---------------------------------------");
                     Console.WriteLine("Client Request :\r\n"+RequestString);
 
                     Request request = new Request(RequestString);
                     // TODO: Call HandleRequest Method that returns the response
                     Response response = HandleRequest(request);
+                    Console.WriteLine("---------------------------------------");
                     Console.WriteLine("Response : \r\n" + response.ResponseString);
+
+                    if (!string.IsNullOrEmpty(redirectionPath))
+                    { 
+                        string NewRequestString = RequestString.Replace(request.relativeURI,"/" + redirectionPath);
+
+                        Request request2 = new Request(NewRequestString);
+                        redirectionPath = string.Empty;
+                        Console.WriteLine("---------------------------------------");
+                        Console.WriteLine("Redirected Request :\r\n" + NewRequestString);
+                        response = HandleRequest(request2);
+                        Console.WriteLine("---------------------------------------");
+                        Console.WriteLine("Redirected Response : \r\n" + response.ResponseString);
+                    }
                     // TODO: Send Response back to client
                     data = Encoding.ASCII.GetBytes(response.ResponseString);
                     clientSock.Send(data);
+                    clientSock.Close();
                     //If the message length is ZERO, means client has Closed the connection
                     //Then Close the connection with this client
                     if (receivedLength == 0)
                     {
+                        Console.WriteLine("---------------------------------------");
                         Console.WriteLine("Client: {0} ended the connection", clientSock.RemoteEndPoint);
                         clientSock.Close();
                     }
@@ -100,11 +120,10 @@ namespace HTTPServer
             // TODO: close client socket
             clientSock.Close();
         }
-        Response HandleRequest(Request request)
+       public Response HandleRequest(Request request)
         {
             string content;
-            string physicalPath, 
-                redirectionPath = string.Empty;
+            string PageName;
             StatusCode code;
             Response response;
             try
@@ -114,41 +133,41 @@ namespace HTTPServer
                 if (!ValidRequest)
                 {
                     code = StatusCode.BadRequest;
-                    physicalPath = Configuration.BadRequestDefaultPageName;
-                    content = LoadDefaultPage(physicalPath);
-                    loadPage(physicalPath, content);
+                    PageName = Configuration.BadRequestDefaultPageName;
+                    content = LoadDefaultPage(PageName);
+                    loadPage(PageName, content);
                     response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                     return response;
                 }
                 //TODO: map the relativeURI in request to get the physical path of the resource.
-                physicalPath = request.relativeURI;
-                string[] pageName = physicalPath.Split('/');
-                physicalPath = pageName[1];
+                PageName = request.relativeURI;
+                string[] pageName = PageName.Split('/');
+                PageName = pageName[1];
                 //TODO: check for redirect
-                if (Configuration.RedirectionRules.ContainsKey(physicalPath))
+                if (Configuration.RedirectionRules.ContainsKey(PageName))
                 {
                     code = StatusCode.Redirect;
-                    redirectionPath = GetRedirectionPagePathIFExist(physicalPath);
-                    physicalPath = Configuration.RedirectionDefaultPageName;
-                    content = LoadDefaultPage(physicalPath);
-                    loadPage(physicalPath, content);
+                    redirectionPath = GetRedirectionPagePathIFExist(PageName);
+                    PageName = Configuration.RedirectionDefaultPageName;
+                    content = LoadDefaultPage(PageName);
+                    //loadPage(physicalPath, content);
                     response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                     return response;
                 }
                 //TODO: check file exists
                 //TODO: read the physical file
-                content = LoadDefaultPage(physicalPath);
+                content = LoadDefaultPage(PageName);
                 if (string.IsNullOrEmpty(content))
                 {
                     code = StatusCode.NotFound;
-                    physicalPath = Configuration.NotFoundDefaultPageName;
-                    content = LoadDefaultPage(physicalPath);
+                    PageName = Configuration.NotFoundDefaultPageName;
+                    content = LoadDefaultPage(PageName);
                 }
                 else
                 {
                     code = StatusCode.OK;
                 }
-                loadPage(physicalPath, content);
+                loadPage(PageName, content);
                 response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                 return response;
                 // Create OK response
@@ -158,9 +177,9 @@ namespace HTTPServer
                 code = StatusCode.InternalServerError;
                 Exception e2 = (Exception)Activator.CreateInstance(ex.GetType(), "Internal Server Error", ex);
                 Logger.LogException(e2);
-                physicalPath = Configuration.InternalErrorDefaultPageName;
-                content = LoadDefaultPage(physicalPath);
-                loadPage(physicalPath, content);
+                PageName = Configuration.InternalErrorDefaultPageName;
+                content = LoadDefaultPage(PageName);
+                loadPage(PageName, content);
                 response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                 return response;
             }
@@ -180,6 +199,9 @@ namespace HTTPServer
             StreamWriter writer = new StreamWriter(path); 
             writer.WriteLine(content);
             writer.Close();
+            // load page in google chrome
+            ProcessStartInfo sInfo = new ProcessStartInfo(path);
+            Process.Start(sInfo);
         }
         private string LoadDefaultPage(string defaultPageName)
         {
