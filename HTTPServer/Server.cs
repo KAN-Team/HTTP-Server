@@ -68,7 +68,9 @@ namespace HTTPServer
                     // TODO: break the while loop if receivedLen==0
                     if (receivedLength == 0)
                     {
-                       // Console.WriteLine("Client: {0} ended the connection", clientSock.RemoteEndPoint);
+                        Console.WriteLine("---------------------------------------");
+                        Console.WriteLine("Client: {0} ended the connection", clientSock.RemoteEndPoint);
+                        clientSock.Close();
                         break;
                     }
                     // TODO: Create a Request object using received request string
@@ -97,17 +99,9 @@ namespace HTTPServer
                     // TODO: Send Response back to client
                     data = Encoding.ASCII.GetBytes(response.ResponseString);
                     clientSock.Send(data);
-                    clientSock.Close();
                     //If the message length is ZERO, means client has Closed the connection
                     //Then Close the connection with this client
-                    if (receivedLength == 0)
-                    {
-                        Console.WriteLine("---------------------------------------");
-                        Console.WriteLine("Client: {0} ended the connection", clientSock.RemoteEndPoint);
-                        clientSock.Close();
-                    }
                     //Else, display the message on the console window
-
                 }
 
                 catch (Exception ex)
