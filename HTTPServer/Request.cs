@@ -48,13 +48,11 @@ namespace HTTPServer
             //TODO: parse the receivedRequest using the \r\n delimeter
             string[] stringSeparators = new string[] { "\r\n" };
             requestLines = requestString.Split(stringSeparators, StringSplitOptions.None);
+            
             // check that there is atleast 3 lines: Request line, Host Header, Blank line (usually 4 lines with the last empty line for empty content)
             if (requestLines.Length < 3) return false;
-            // Parse Request line
-            // Validate blank line exists
-            // Load header lines into HeaderLines dictionary
-            return (ParseRequestLine() && LoadHeaderLines() && ValidateBlankLine());
-        
+
+            return (ParseRequestLine() && LoadHeaderLines() && ValidateBlankLine() && ValidateContent());
         }
 
         private bool ParseRequestLine()
@@ -69,7 +67,6 @@ namespace HTTPServer
                     break;
                 case "POST":
                     method = RequestMethod.POST;
-
                     break;
                 case "HEAD":
                     method = RequestMethod.HEAD;
@@ -107,13 +104,17 @@ namespace HTTPServer
             headerLines = new Dictionary<string, string>();
             string[] stringSeparators = new string[] { "\r\n" };
             string [] headers = requestLines[1].Split(stringSeparators, StringSplitOptions.None);
+
             foreach(string line in headers )
             {
                  stringSeparators = new string[] { ": " };
                 string[] Head = line.Split(stringSeparators, StringSplitOptions.None);
                 headerLines.Add(Head[0],Head[1]);
             }
+
             if (HeaderLines.Count != headers.Length) return false;
+
+            //HTTP 1.1 requires a Host: header
             if (httpVersion.Equals(HTTPVersion.HTTP11)) {
                 if (!headerLines.ContainsKey("Host")) return false;
             }
@@ -125,5 +126,26 @@ namespace HTTPServer
             return string.IsNullOrEmpty(requestLines[requestLines.Length-1]);
         }
 
+        private bool ValidateContent() {
+
+            string[] stringSeparators = new string[] { "\r\n" };
+            contentLines = requestLines[3].Split(stringSeparators, StringSplitOptions.None);
+
+            switch (method) {
+
+                //Content is empty when the method is Get or Head
+                case RequestMethod.HEAD:
+                case RequestMethod.GET:
+                    if (!string.IsNullOrEmpty(requestLines[3])) return false;
+                    break;
+
+                case RequestMethod.POST:
+                    //A POST request must include a Content-Length line in the headers
+                    //Content only takes values with Post method
+                    if (string.IsNullOrEmpty(requestLines[3]) || headerLines.ContainsKey("Content-length")) return false;
+                    break;
+            }          
+            return true;
+        }
     }
 }
