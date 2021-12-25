@@ -33,13 +33,14 @@ namespace HTTPServer
         {
             // create status line
             string statusLine = GetStatusLine(code , hTTPVersion);
+
             // TODO: Add headlines (Content-Type, Content-Length,Date, [location if there is redirection])
             DateTime dateTime =  DateTime.Now;
             headerLines.Add(contentType);
             headerLines.Add(content.Length.ToString());
             headerLines.Add(dateTime.ToString());
-            string Headers = "";
-            Headers = "Content-Type: " + headerLines[0] + "\r\n"
+
+            string Headers = "Content-Type: " + headerLines[0] + "\r\n"
                 + "Content-Length: " + headerLines[1] + "\r\n"
                 + "Date: " + headerLines[2];
 
@@ -48,9 +49,9 @@ namespace HTTPServer
                 headerLines.Add(redirectoinPath);
                 Headers = Headers +"\r\n"+ "location: " + headerLines[3];
             }
-            // TODO: Create the request string
             string BlankLine = "\r\n";
 
+            // TODO: Create the response string
             responseString = statusLine + "\r\n" + Headers + "\r\n" + BlankLine + content;     
         }
 

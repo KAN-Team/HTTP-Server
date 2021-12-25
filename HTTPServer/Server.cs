@@ -51,6 +51,7 @@ namespace HTTPServer
             // set client socket ReceiveTimeout = 0 to indicate an infinite time-out period
             Socket clientSock = (Socket)obj;
             clientSock.ReceiveTimeout = 0;
+
             // TODO: receive requests in while true until remote client closes the socket.
             int receivedLength;
             byte[] data = new byte[1024];
@@ -65,7 +66,12 @@ namespace HTTPServer
                     // TODO: Receive request
                     data = new byte[1024];
                     receivedLength = clientSock.Receive(data);
+
                     // TODO: break the while loop if receivedLen==0
+                    //If the message length is ZERO, means client has Closed the connection
+                    //Then Close the connection with this client
+                    //Else, display the message on the console window
+
                     if (receivedLength == 0)
                     {
                         Console.WriteLine("---------------------------------------");
@@ -73,12 +79,13 @@ namespace HTTPServer
                         clientSock.Close();
                         break;
                     }
-                    // TODO: Create a Request object using received request string
+
                     string RequestString = Encoding.ASCII.GetString(data , 0 ,receivedLength);
                     Console.WriteLine("---------------------------------------");
                     Console.WriteLine("Client Request :\r\n"+RequestString);
-
+                    // TODO: Create a Request object using received request string
                     Request request = new Request(RequestString);
+
                     // TODO: Call HandleRequest Method that returns the response
                     Response response = HandleRequest(request);
                     Console.WriteLine("---------------------------------------");
@@ -96,18 +103,17 @@ namespace HTTPServer
                         Console.WriteLine("---------------------------------------");
                         Console.WriteLine("Redirected Response : \r\n" + response.ResponseString);
                     }
+
                     // TODO: Send Response back to client
                     data = Encoding.ASCII.GetBytes(response.ResponseString);
                     clientSock.Send(data);
-                    //If the message length is ZERO, means client has Closed the connection
-                    //Then Close the connection with this client
-                    //Else, display the message on the console window
+
                 }
 
                 catch (Exception ex)
                 {
-                    Logger.LogException(ex);
                     // TODO: log exception using Logger class
+                    Logger.LogException(ex);                    
                 }
             }
 
@@ -133,6 +139,7 @@ namespace HTTPServer
                     response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                     return response;
                 }
+
                 //TODO: map the relativeURI in request to get the physical path of the resource.
                 PageName = request.relativeURI;
                 string[] pageName = PageName.Split('/');
@@ -148,8 +155,10 @@ namespace HTTPServer
                     response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                     return response;
                 }
+
                 //TODO: check file exists
                 //TODO: read the physical file
+                // Create OK response
                 content = LoadDefaultPage(PageName);
                 if (string.IsNullOrEmpty(content))
                 {
@@ -164,7 +173,7 @@ namespace HTTPServer
                 loadPage(PageName, content);
                 response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
                 return response;
-                // Create OK response
+                
             }
             catch (Exception ex)
             {
@@ -187,6 +196,7 @@ namespace HTTPServer
             RedirectionPage = Configuration.RedirectionRules[relativePath];
             return RedirectionPage;
         }
+
         private void loadPage(string path, string content)
         {
            
@@ -197,6 +207,7 @@ namespace HTTPServer
             ProcessStartInfo sInfo = new ProcessStartInfo(path);
             Process.Start(sInfo);
         }
+
         private string LoadDefaultPage(string defaultPageName)
         {
             string contentOfPage;
