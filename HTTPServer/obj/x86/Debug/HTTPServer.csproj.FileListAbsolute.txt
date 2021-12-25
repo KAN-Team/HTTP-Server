@@ -8,3 +8,9 @@ C:\Users\LENOVO\OneDrive\Documents\githup\Network_project\HTTPServer\obj\x86\Deb
 C:\Users\LENOVO\OneDrive\Documents\githup\Network_project\HTTPServer\obj\x86\Debug\HTTPServer.csproj.CoreCompileInputs.cache
 C:\Users\LENOVO\OneDrive\Documents\githup\Network_project\HTTPServer\obj\x86\Debug\HTTPServer.exe
 C:\Users\LENOVO\OneDrive\Documents\githup\Network_project\HTTPServer\obj\x86\Debug\HTTPServer.pdb
+E:\last year\network\network_project\HTTPServer\bin\Debug\HTTPServer.exe
+E:\last year\network\network_project\HTTPServer\bin\Debug\HTTPServer.pdb
+E:\last year\network\network_project\HTTPServer\obj\x86\Debug\HTTPServer.csproj.AssemblyReference.cache
+E:\last year\network\network_project\HTTPServer\obj\x86\Debug\HTTPServer.csproj.CoreCompileInputs.cache
+E:\last year\network\network_project\HTTPServer\obj\x86\Debug\HTTPServer.exe
+E:\last year\network\network_project\HTTPServer\obj\x86\Debug\HTTPServer.pdb
