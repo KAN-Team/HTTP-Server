@@ -127,35 +127,36 @@ namespace HTTPServer
             StatusCode code;
             Response response;
             try
-            {                
-                //TODO: map the relativeURI in request to get the physical path of the resource.
-                PageName = request.relativeURI;
-                string[] pageName = PageName.Split('/');
-                PageName = pageName[1];
-
-                content = LoadDefaultPage(PageName);
-
+            {
                 //TODO: check for bad request 
                 if (!request.ParseRequest())
                 {
                     code = StatusCode.BadRequest;
                     PageName = Configuration.BadRequestDefaultPageName;
                     content = LoadDefaultPage(PageName);
+                    goto returnresponse;
                 }
+
                 //TODO: check for redirect
-                else if (Configuration.RedirectionRules.ContainsKey(PageName))
+                //TODO: map the relativeURI in request to get the physical path of the resource.
+                PageName = request.relativeURI;
+                string[] pageName = PageName.Split('/');
+                PageName = pageName[1];
+
+                if (Configuration.RedirectionRules.ContainsKey(PageName))
                 {
                     code = StatusCode.Redirect;
                     redirectionPath = GetRedirectionPagePathIFExist(PageName);
                     PageName = Configuration.RedirectionDefaultPageName;
                     content = LoadDefaultPage(PageName);
                     //loadPage(physicalPath, content);
-
+                    goto returnresponse;
                 }
                 //TODO: check file exists
                 //TODO: read the physical file
-                // Create OK response              
-                else if (string.IsNullOrEmpty(content))
+                // Create OK response
+                content = LoadDefaultPage(PageName);
+                 if (string.IsNullOrEmpty(content))
                 {
                     code = StatusCode.NotFound;
                     PageName = Configuration.NotFoundDefaultPageName;
@@ -172,10 +173,9 @@ namespace HTTPServer
                 Exception e2 = (Exception)Activator.CreateInstance(ex.GetType(), "Internal Server Error", ex);
                 Logger.LogException(e2);
                 PageName = Configuration.InternalErrorDefaultPageName;
-                content = LoadDefaultPage(PageName);
-                           
+                content = LoadDefaultPage(PageName);               
             }
-
+            returnresponse:
             loadPage(PageName, content);
             response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
             return response;
