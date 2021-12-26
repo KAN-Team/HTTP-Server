@@ -22,7 +22,7 @@ namespace HTTPServer
     class Request
     {
         string[] requestLines;
-        RequestMethod method;
+        public RequestMethod method;
         public string relativeURI;
         Dictionary<string, string> headerLines;
 
@@ -125,7 +125,7 @@ namespace HTTPServer
         {
             return string.IsNullOrEmpty(requestLines[requestLines.Length-1]);
         }
-
+        //bonus
         private bool ValidateContent() {
 
             string[] stringSeparators = new string[] { "\r\n" };
@@ -136,13 +136,15 @@ namespace HTTPServer
                 //Content is empty when the method is Get or Head
                 case RequestMethod.HEAD:
                 case RequestMethod.GET:
-                    if (!string.IsNullOrEmpty(requestLines[3])) return false;
+                    if (string.IsNullOrEmpty(requestLines[3])) return true;
                     break;
 
                 case RequestMethod.POST:
-                    //A POST request must include a Content-Length line in the headers
+                    //A POST request must include a Content-Length and Content-Type line in the headers
                     //Content only takes values with Post method
-                    if (string.IsNullOrEmpty(requestLines[3]) || headerLines.ContainsKey("Content-length")) return false;
+                    if (!string.IsNullOrEmpty(requestLines[3]) && headerLines.ContainsKey("Content-length")&& 
+                        (headerLines.ContainsKey("Content-Type")|| headerLines.ContainsKey("Transfer-Encoding"))) 
+                        return true;
                     break;
             }          
             return true;

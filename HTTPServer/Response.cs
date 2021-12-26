@@ -15,7 +15,6 @@ namespace HTTPServer
         BadRequest = 400,
         Redirect = 301
     }
-
    
     class Response
     {
@@ -29,7 +28,7 @@ namespace HTTPServer
         }
         List<string> headerLines = new List<string>();
         
-        public Response(StatusCode code, string contentType, string content, string redirectoinPath , HTTPVersion hTTPVersion)
+        public Response(StatusCode code, string contentType, string content, string redirectoinPath , HTTPVersion hTTPVersion , RequestMethod Method)
         {
             // create status line
             string statusLine = GetStatusLine(code , hTTPVersion);
@@ -39,7 +38,7 @@ namespace HTTPServer
             headerLines.Add(contentType);
             headerLines.Add(content.Length.ToString());
             headerLines.Add(dateTime.ToString());
-
+         
             string Headers = "Content-Type: " + headerLines[0] + "\r\n"
                 + "Content-Length: " + headerLines[1] + "\r\n"
                 + "Date: " + headerLines[2];
@@ -50,11 +49,27 @@ namespace HTTPServer
                 Headers = Headers +"\r\n"+ "location: " + headerLines[3];
             }
             string BlankLine = "\r\n";
+            
+            //check for head and get methods
+            content = GetContent(Method, content);
 
             // TODO: Create the response string
             responseString = statusLine + "\r\n" + Headers + "\r\n" + BlankLine + content;     
         }
-
+        //bonus
+        private string GetContent(RequestMethod method , string content) 
+        {
+            // for HEAD requests, the server does not return a
+            // response body but still specifies the size of the response content using the Content-Length header.
+            switch (method)
+            {
+                case RequestMethod.GET:
+                    return content;                                              
+                case RequestMethod.HEAD:
+                    return null;                   
+            }
+            return content ;
+        }
         private string GetStatusLine(StatusCode code , HTTPVersion hTTPVersion)
         {
             // TODO: Create the response status line and return it
@@ -73,10 +88,9 @@ namespace HTTPServer
             }
             string CodeInString = code.GetHashCode().ToString();
 
-            string Message = Enum.GetName(typeof(StatusCode), code);
+            string Message = Enum.GetName(typeof(StatusCode), code);           
             
-            string statusLine = version + " " + CodeInString + " " + Message ;
-            return statusLine;
+            return version + " " + CodeInString + " " + Message;
         }
        
         }

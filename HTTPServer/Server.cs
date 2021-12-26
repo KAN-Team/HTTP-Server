@@ -54,7 +54,7 @@ namespace HTTPServer
 
             // TODO: receive requests in while true until remote client closes the socket.
             int receivedLength;
-            byte[] data = new byte[1024];
+            byte[] data;
             string welcomeMsg = "Welcome to my server ^_^ ..";
             data = Encoding.ASCII.GetBytes(welcomeMsg);
             clientSock.Send(data);
@@ -116,10 +116,10 @@ namespace HTTPServer
                     Logger.LogException(ex);                    
                 }
             }
-
             // TODO: close client socket
             clientSock.Close();
         }
+
        public Response HandleRequest(Request request)
         {
             string content;
@@ -127,40 +127,35 @@ namespace HTTPServer
             StatusCode code;
             Response response;
             try
-            {
-                //TODO: check for bad request 
-                bool ValidRequest = request.ParseRequest();
-                if (!ValidRequest)
-                {
-                    code = StatusCode.BadRequest;
-                    PageName = Configuration.BadRequestDefaultPageName;
-                    content = LoadDefaultPage(PageName);
-                    loadPage(PageName, content);
-                    response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
-                    return response;
-                }
-
+            {                
                 //TODO: map the relativeURI in request to get the physical path of the resource.
                 PageName = request.relativeURI;
                 string[] pageName = PageName.Split('/');
                 PageName = pageName[1];
+
+                content = LoadDefaultPage(PageName);
+
+                //TODO: check for bad request 
+                if (!request.ParseRequest())
+                {
+                    code = StatusCode.BadRequest;
+                    PageName = Configuration.BadRequestDefaultPageName;
+                    content = LoadDefaultPage(PageName);
+                }
                 //TODO: check for redirect
-                if (Configuration.RedirectionRules.ContainsKey(PageName))
+                else if (Configuration.RedirectionRules.ContainsKey(PageName))
                 {
                     code = StatusCode.Redirect;
                     redirectionPath = GetRedirectionPagePathIFExist(PageName);
                     PageName = Configuration.RedirectionDefaultPageName;
                     content = LoadDefaultPage(PageName);
                     //loadPage(physicalPath, content);
-                    response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
-                    return response;
-                }
 
+                }
                 //TODO: check file exists
                 //TODO: read the physical file
-                // Create OK response
-                content = LoadDefaultPage(PageName);
-                if (string.IsNullOrEmpty(content))
+                // Create OK response              
+                else if (string.IsNullOrEmpty(content))
                 {
                     code = StatusCode.NotFound;
                     PageName = Configuration.NotFoundDefaultPageName;
@@ -169,11 +164,7 @@ namespace HTTPServer
                 else
                 {
                     code = StatusCode.OK;
-                }
-                loadPage(PageName, content);
-                response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
-                return response;
-                
+                }                            
             }
             catch (Exception ex)
             {
@@ -182,10 +173,12 @@ namespace HTTPServer
                 Logger.LogException(e2);
                 PageName = Configuration.InternalErrorDefaultPageName;
                 content = LoadDefaultPage(PageName);
-                loadPage(PageName, content);
-                response = new Response(code, "text/html", content, redirectionPath, request.httpVersion);
-                return response;
+                           
             }
+
+            loadPage(PageName, content);
+            response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
+            return response;
         }
 
      
