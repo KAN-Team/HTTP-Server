@@ -31,13 +31,12 @@ namespace HTTPServer
         {
             // TODO: Listen to connections, with large backlog.
             serverSocket.Listen(100);
-
             // TODO: Accept connections in while loop and start a thread for each connection on function "Handle Connection"
             while (true)
             {
                 //TODO: accept connections and start thread for each accepted connection.
                 Socket clientSocket = this.serverSocket.Accept();
-                Console.WriteLine("---------------------------------------");
+                Console.WriteLine("---------------------------------------");            
                 Console.WriteLine("New client accepted: {0}", clientSocket.RemoteEndPoint);
                 Thread newthread = new Thread(new ParameterizedThreadStart(HandleConnection));
                 //Start the thread
@@ -56,9 +55,6 @@ namespace HTTPServer
             // TODO: receive requests in while true until remote client closes the socket.
             int receivedLength;
             byte[] data;
-            string welcomeMsg = "Welcome to my server ^_^ ..";
-            data = Encoding.ASCII.GetBytes(welcomeMsg);
-            clientSock.Send(data);
 
             while (true)
             {
@@ -150,7 +146,6 @@ namespace HTTPServer
                     redirectionPath = GetRedirectionPagePathIFExist(PageName);
                     PageName = Configuration.RedirectionDefaultPageName;
                     content = LoadDefaultPage(PageName);
-                    //loadPage(physicalPath, content);
                     goto returnresponse;
                 }
                 //TODO: check file exists
@@ -177,7 +172,6 @@ namespace HTTPServer
                 content = LoadDefaultPage(PageName);               
             }
         returnresponse:
-            loadPage(PageName, content);
             //handle post method (bonus)
             if (string.Equals(PageName, "formpage.html"))
             {
@@ -245,17 +239,6 @@ namespace HTTPServer
             string RedirectionPage;
             RedirectionPage = Configuration.RedirectionRules[relativePath];
             return RedirectionPage;
-        }
-
-        private void loadPage(string path, string content)
-        {
-           
-            StreamWriter writer = new StreamWriter(path); 
-            writer.WriteLine(content);
-            writer.Close();
-            // load page in google chrome
-            ProcessStartInfo sInfo = new ProcessStartInfo(path);
-            Process.Start(sInfo);
         }
 
         private string LoadDefaultPage(string defaultPageName)
