@@ -58,7 +58,11 @@ namespace HTTPServer
         }
         //bonus
         private string GetContent(RequestMethod method , string content) 
-        {
+        {       
+            //handling post method
+            if (string.Equals(content, "Thank you"))
+                return content;
+
             // for HEAD requests, the server does not return a
             // response body but still specifies the size of the response content using the Content-Length header.
             switch (method)

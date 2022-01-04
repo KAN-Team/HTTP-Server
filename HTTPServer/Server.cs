@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Xml;
 
 namespace HTTPServer
 {
@@ -164,7 +165,7 @@ namespace HTTPServer
                 }
                 else
                 {
-                    code = StatusCode.OK;
+                    code = StatusCode.OK;                
                 }                            
             }
             catch (Exception ex)
@@ -175,12 +176,68 @@ namespace HTTPServer
                 PageName = Configuration.InternalErrorDefaultPageName;
                 content = LoadDefaultPage(PageName);               
             }
-            returnresponse:
+        returnresponse:
             loadPage(PageName, content);
-            response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
+            //handle post method (bonus)
+            if (string.Equals(PageName, "formpage.html"))
+            {
+                savetoxml();
+                response = new Response(code, "text/html", "Thank you", redirectionPath, request.httpVersion, request.method);
+            }
+            else
+                response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
             return response;
         }
+        //bonus
+        private void savetoxml() {
+            string  rootFolder = @"C:\Users\Rama2\Downloads";
+            string authorsFile = "Student.txt";
+            string xmlDocumentpath = "E:/last year/network/Network_project/HTTPServer/Students.xml";
+            string filepath = Path.Combine(rootFolder, authorsFile);
+            while (true) 
+            {               
+                if (File.Exists(filepath))
+                {                   
+                    StreamReader sr = new StreamReader(filepath);
+                    string line;
+                    string[] student = null;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        Console.WriteLine(line);
+                        student = line.Split(' ');
+                        break;
+                    }
+                    sr.Close();
+                    Console.WriteLine(student.Length );
+                    
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.Load(xmlDocumentpath);
+                    XmlNode rootnode = xmlDoc.GetElementsByTagName("StudentsInformation")[0];
+                    XmlNode studentnode  = xmlDoc.CreateElement("Student");
 
+                    XmlNode studentnamenode = xmlDoc.CreateElement("name");
+                    studentnamenode.InnerText = student[1];
+                    studentnode.AppendChild(studentnamenode);
+
+                    XmlNode studentidnode = xmlDoc.CreateElement("ID");
+                    studentidnode.InnerText = student[2];
+                    studentnode.AppendChild(studentidnode);
+
+                    XmlNode studentsecnode = xmlDoc.CreateElement("Section");
+                    studentsecnode.InnerText = student[3];
+                    studentnode.AppendChild(studentsecnode);
+
+                    rootnode.AppendChild(studentnode);
+                    xmlDoc.Save(xmlDocumentpath);
+                    File.Delete(filepath);
+                    
+                    break;
+                }
+               
+
+            }
+            
+        }
      
         private string GetRedirectionPagePathIFExist(string relativePath)
         {
