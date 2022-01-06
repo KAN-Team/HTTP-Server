@@ -44,7 +44,7 @@ namespace HTTPServer
         /// </summary>
         /// <returns>True if parsing succeeds, false otherwise.</returns>
         public bool ParseRequest()
-        { 
+        {
             //TODO: parse the receivedRequest using the \r\n delimeter
             string[] stringSeparators = new string[] { "\r\n" };
             requestLines = requestString.Split(stringSeparators, StringSplitOptions.None);
@@ -102,18 +102,20 @@ namespace HTTPServer
         private bool LoadHeaderLines()
         {
             headerLines = new Dictionary<string, string>();
-            string[] stringSeparators = new string[] { "\r\n" };
-            string [] headers = requestLines[1].Split(stringSeparators, StringSplitOptions.None);
+            string[] stringSeparators = new string[] { ": " };
 
-            foreach(string line in headers )
+            for (int i = 0; i < requestLines.Length; i++) 
             {
-                 stringSeparators = new string[] { ": " };
-                string[] Head = line.Split(stringSeparators, StringSplitOptions.None);
-                headerLines.Add(Head[0],Head[1]);
+                if (!string.IsNullOrEmpty(requestLines[i + 1]))
+                {
+                    string header = requestLines[i + 1];
+                    string[] Head = header.Split(stringSeparators, StringSplitOptions.None);
+                    if (Head.Length != 2) return false;
+                    headerLines.Add(Head[0], Head[1]);                   
+                }
+                else break;
             }
-
-            if (HeaderLines.Count != headers.Length) return false;
-
+            
             //HTTP 1.1 requires a Host: header
             if (httpVersion.Equals(HTTPVersion.HTTP11)) {
                 if (!headerLines.ContainsKey("Host")) return false;
@@ -123,7 +125,7 @@ namespace HTTPServer
 
         private bool ValidateBlankLine()
         {
-            return string.IsNullOrEmpty(requestLines[requestLines.Length-1]);
+            return string.IsNullOrEmpty(requestLines[headerLines.Count+1]);
         }
         //bonus
         private bool ValidateContent() {
