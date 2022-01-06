@@ -59,7 +59,7 @@ configuration.RootPath= “c:\intepub\wwwroot\fcis1”  and URI = “/aboutus.ht
 1) http://localhost:1000/aboutus.html (redirection)
 2) http://localhost:1000/main.html (main)
 3) http://localhost:1000/blabla.html  (404 page)
-4) http://localhost:1000/formpage.html  (post method (bonus code) try to submit and see the changes of the xml file)
+4) http://localhost:1000/formpage.html  (post method try to submit the form and see the changes of the xml file)
 
 ### Copyrights
 - KAN Org.
