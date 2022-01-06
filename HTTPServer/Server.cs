@@ -15,7 +15,8 @@ namespace HTTPServer
     {
         string redirectionPath = string.Empty;
         Socket serverSocket;
-
+        string page = null;
+        int countformpge = 0;
         public Server(int portNumber, string redirectionMatrixPath)
         {
             //TODO: call this.LoadRedirectionRules passing redirectionMatrixPath to it
@@ -104,9 +105,7 @@ namespace HTTPServer
                     // TODO: Send Response back to client
                     data = Encoding.ASCII.GetBytes(response.ResponseString);
                     clientSock.Send(data);
-
                 }
-
                 catch (Exception ex)
                 {
                     // TODO: log exception using Logger class
@@ -125,6 +124,8 @@ namespace HTTPServer
             Response response;
             try
             {
+
+                //throw new Exception();
                 //TODO: check for bad request 
                 if (!request.ParseRequest())
                 {
@@ -175,60 +176,60 @@ namespace HTTPServer
             //handle post method (bonus)
             if (string.Equals(PageName, "formpage.html"))
             {
+                //Thread newthread = new Thread(new ThreadStart(savetoxml));
+                //Start the thread
+                Process.Start(PageName);
                 savetoxml();
+                //newthread.Start();
                 response = new Response(code, "text/html", "Thank you", redirectionPath, request.httpVersion, request.method);
             }
-            else
-                response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
+             else  response = new Response(code, "text/html", content, redirectionPath, request.httpVersion, request.method);
             return response;
         }
         //bonus
         private void savetoxml() {
-            string  rootFolder = @"C:\Users\Rama2\Downloads";
+            Console.WriteLine("&&&&&& threed start");
+
+            string rootFolder = @"C:\Users\Rama2\Downloads";
             string authorsFile = "Student.txt";
             string xmlDocumentpath = "E:/last year/network/Network_project/HTTPServer/Students.xml";
             string filepath = Path.Combine(rootFolder, authorsFile);
-            while (true) 
-            {               
+            while (true) {
                 if (File.Exists(filepath))
-                {                   
+                {
+                    Console.WriteLine("&&&&&& submit");
                     StreamReader sr = new StreamReader(filepath);
                     string line;
                     string[] student = null;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        Console.WriteLine(line);
                         student = line.Split(' ');
                         break;
                     }
                     sr.Close();
-                    Console.WriteLine(student.Length );
-                    
+
                     XmlDocument xmlDoc = new XmlDocument();
                     xmlDoc.Load(xmlDocumentpath);
                     XmlNode rootnode = xmlDoc.GetElementsByTagName("StudentsInformation")[0];
-                    XmlNode studentnode  = xmlDoc.CreateElement("Student");
+                    XmlNode studentnode = xmlDoc.CreateElement("Student");
 
                     XmlNode studentnamenode = xmlDoc.CreateElement("name");
-                    studentnamenode.InnerText = student[1];
+                    studentnamenode.InnerText = student[0];
                     studentnode.AppendChild(studentnamenode);
 
                     XmlNode studentidnode = xmlDoc.CreateElement("ID");
-                    studentidnode.InnerText = student[2];
+                    studentidnode.InnerText = student[1];
                     studentnode.AppendChild(studentidnode);
 
                     XmlNode studentsecnode = xmlDoc.CreateElement("Section");
-                    studentsecnode.InnerText = student[3];
+                    studentsecnode.InnerText = student[2];
                     studentnode.AppendChild(studentsecnode);
 
                     rootnode.AppendChild(studentnode);
                     xmlDoc.Save(xmlDocumentpath);
                     File.Delete(filepath);
-                    
                     break;
                 }
-               
-
             }
             
         }

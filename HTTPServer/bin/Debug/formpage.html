@@ -7,7 +7,7 @@
             var name = document.getElementById('StudentName').value;
             var ID = document.getElementById('ID').value;
             var Sec = document.getElementById('Section').value;
-            var Total = name + ID + Sec;
+            var Total = name +" " + ID + " " + Sec ;
             var blob = new Blob([Total], { type: "text/plain;charset=utf-8" });
             saveAs(blob, "Student.txt");
         } 
